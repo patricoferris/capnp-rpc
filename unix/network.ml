@@ -84,7 +84,8 @@ let connect net ~sw ~secret_key (addr, auth) =
       | `Unix _ -> ()
       | `TCP _ ->
         (* TODO: check it's OK to set keep-alives after connecting *)
-        let socket = Option.get (Eio_unix.FD.peek_opt socket) in
+        let socket = Option.get (Eio_unix.Resource.fd_opt socket) in
+        Eio_unix.Fd.use_exn "connect" socket @@ fun socket ->
         Unix.setsockopt socket Unix.SO_KEEPALIVE true;
         Keepalive.try_set_idle socket 60
     end;

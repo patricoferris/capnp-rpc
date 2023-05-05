@@ -171,7 +171,8 @@ let create_server ?tags ?restore ~sw ~net config =
     | `TCP (host, port) ->
       let addr = Network.addr_of_host host in
       let socket = Eio.Net.listen ~sw ~backlog ~reuse_addr:true net (`Tcp (addr, port)) in
-      let unix_socket = Option.get (Eio_unix.FD.peek_opt socket) in
+      let unix_socket = Option.get (Eio_unix.Resource.fd_opt socket) in
+      Eio_unix.Fd.use_exn "create_server" unix_socket @@ fun unix_socket ->
       Unix.setsockopt unix_socket Unix.SO_KEEPALIVE true;
       Keepalive.try_set_idle unix_socket 60;
       socket
@@ -184,6 +185,7 @@ let create_server ?tags ?restore ~sw ~net config =
 let listen ?tags ~sw (config, vat, socket) =
   while true do
     let client, addr = Eio.Net.accept ~sw socket in
+    Switch.on_release sw (fun () -> Eio.traceln "Switch released!");
     Log.info (fun f -> f ?tags "Accepting new connection from %a" Eio.Net.Sockaddr.pp addr);
     let secret_key = if config.Vat_config.serve_tls then Some (Vat_config.secret_key config) else None in
     Fiber.fork ~sw (fun () ->

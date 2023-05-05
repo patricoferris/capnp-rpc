@@ -166,13 +166,15 @@ module Make (Network : S.NETWORK) = struct
     let restore = Restorer.fn restore in
     let fork = Fiber.fork ~sw in
     let conn = Conn.create ~restore ~tags ~fork ~queue_send in
-    {
+    let v = {
       sw;
       conn;
       endpoint;
       xmit_queue;
       disconnecting = false;
-    }
+    } in
+    Switch.on_release sw (fun () -> v.disconnecting <- true);
+    v
 
   let listen t =
     Prometheus.Gauge.inc_one Metrics.connections;

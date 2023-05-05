@@ -38,16 +38,16 @@ let wait_until_settled (x : _ t) =
     )
   in
   aux x;
-  Promise.await result
+  result
 
 let await_settled t =
-  wait_until_settled t;
+  Promise.await @@ wait_until_settled t;
   match problem t with
   | None -> Ok ()
   | Some ex -> Error ex
 
 let await_settled_exn t =
-  wait_until_settled t;
+  Promise.await @@ wait_until_settled t;
   match problem t with
   | None -> ()
   | Some e -> Fmt.failwith "%a" Capnp_rpc.Exception.pp e

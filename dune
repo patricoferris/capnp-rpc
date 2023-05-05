@@ -6,3 +6,5 @@
  (deps
   (source_tree examples)
   (package capnp-rpc-unix)))
+
+(vendored_dirs eio ocaml-tls)

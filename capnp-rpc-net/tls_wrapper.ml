@@ -10,6 +10,7 @@ let plain_endpoint flow =
   Endpoint.of_flow ~peer_id:Auth.Digest.insecure flow
 
 let connect_as_server flow secret_key =
+  Eio.traceln "conn as server";
   match secret_key with
   | None -> Ok (plain_endpoint flow)
   | Some key ->

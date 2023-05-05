@@ -32,9 +32,9 @@ end
 module Parent = struct
   let run socket =
     Logging.init "parent";
-    Switch.run @@ fun sw -> 
+    Switch.run @@ fun sw ->
     (* Run Cap'n Proto RPC protocol on [socket]: *)
-    let p = Eio_unix.FD.as_socket ~sw ~close_unix:true socket
+    let p = Eio_unix.import_socket_stream ~sw ~close_unix:true socket
             |> Capnp_rpc_net.Endpoint.of_flow
               ~peer_id:Capnp_rpc_net.Auth.Digest.insecure
     in
@@ -55,8 +55,8 @@ end
 module Child = struct
   let run socket =
     Logging.init "child";
-    Switch.run @@ fun sw -> 
-    let socket = Eio_unix.FD.as_socket ~sw ~close_unix:false socket in
+    Switch.run @@ fun sw ->
+    let socket = Eio_unix.import_socket_stream ~sw ~close_unix:false socket in
     let service = Calc.local ~sw in
     let restore = Capnp_rpc_net.Restorer.single service_name service in
     (* Run Cap'n Proto RPC protocol on [socket]: *)
