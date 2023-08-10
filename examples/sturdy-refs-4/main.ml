@@ -3,6 +3,8 @@ open Capnp_rpc_lwt
 
 module Restorer = Capnp_rpc_net.Restorer
 
+let ( / ) = Eio.Path.( / )
+
 let () =
   Logs.set_level (Some Logs.Warning);
   Logs.set_reporter (Logs_fmt.reporter ())
@@ -17,9 +19,10 @@ let serve config =
   Switch.run @@ fun sw ->
   (* Create the on-disk store *)
   let make_sturdy = Capnp_rpc_unix.Vat_config.sturdy_uri config in
-  let db, set_loader = Db.create ~make_sturdy "./store" in
+  let db, set_loader = Db.create ~make_sturdy (env#cwd / "store") in
   (* Create the restorer *)
   let services = Restorer.Table.of_loader ~sw (module Db) db in
+  Switch.on_release sw (fun () -> Restorer.Table.clear services);
   let restore = Restorer.of_table services in
   (* Add the root service *)
   let persist_new ~label =
@@ -61,7 +64,7 @@ let sub cap_file label =
   let sub = Logger.sub logger label in
   let uri = Persistence.save_exn sub in
   Capnp_rpc_unix.Cap_file.save_uri uri sub_file |> or_fail;
-  Printf.printf "Wrote %S\n%!" sub_file
+  Printf.printf "Wrote %S\n%!" sub_file;
 
 open Cmdliner
 

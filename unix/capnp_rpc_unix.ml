@@ -194,7 +194,7 @@ let listen ?tags ~sw (config, vat, socket) =
   done
 
 let serve ?tags ?restore ~sw ~net config =
-  let net = (net : #Eio.Net.t :> Eio.Net.t) in
+  let net = (net :> [`Generic] Eio.Net.ty r) in
   let (vat, socket) = create_server ?tags ?restore ~sw ~net config in
   Fiber.fork ~sw (fun () ->
       listen ?tags ~sw (config, vat, socket)
@@ -202,7 +202,7 @@ let serve ?tags ?restore ~sw ~net config =
   vat
 
 let client_only_vat ?tags ?restore ~sw net =
-  let net = (net : #Eio.Net.t :> Eio.Net.t) in
+  let net = (net :> [`Generic] Eio.Net.ty r) in
   let secret_key = lazy (Capnp_rpc_net.Auth.Secret_key.generate ()) in
   Vat.create ?tags ?restore ~secret_key ~sw net
 

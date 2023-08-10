@@ -1,3 +1,5 @@
+open Eio.Std
+
 let src = Logs.Src.create "endpoint" ~doc:"Send and receive Cap'n'Proto messages"
 module Log = (val Logs.src_log src: Logs.LOG)
 
@@ -5,7 +7,7 @@ let compression = `None
 
 let record_sent_messages = false
 
-type flow = Eio.Flow.two_way
+type flow = Eio.Flow.two_way_ty r
 
 type t = {
   flow : flow;

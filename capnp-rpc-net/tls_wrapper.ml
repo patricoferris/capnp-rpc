@@ -29,7 +29,6 @@ let connect_as_server flow secret_key =
           Ok (Endpoint.of_flow ~peer_id flow)
 
 let connect_as_client flow secret_key auth =
-  let flow = (flow :> Eio.Flow.two_way) in
   match Digest.authenticator auth with
   | None -> Ok (plain_endpoint flow)
   | Some authenticator ->

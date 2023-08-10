@@ -18,6 +18,7 @@ let start_server ~sw net =
   let config = Capnp_rpc_unix.Vat_config.create ~secret_key listen_address in
   let make_sturdy = Capnp_rpc_unix.Vat_config.sturdy_uri config in
   let services = Restorer.Table.create make_sturdy in
+  Switch.on_release sw (fun () -> Restorer.Table.clear services);
   let restore = Restorer.of_table services in
   (* $MDX part-begin=root *)
   let root_id = Capnp_rpc_unix.Vat_config.derived_id config "root" in
@@ -47,8 +48,7 @@ let () =
   Logger.log root "Message from Admin";
   (* $MDX part-begin=save *)
   (* The admin creates a logger for Alice and saves it: *)
-  let for_alice = Logger.sub root "alice" in
-  let uri = Persistence.save_exn for_alice in
+  let uri = Capability.with_ref (Logger.sub root "alice") Persistence.save_exn in
   Capnp_rpc_unix.Cap_file.save_uri uri "alice.cap" |> or_fail;
   (* Alice uses it: *)
   run_client ~sw ~net "alice.cap";

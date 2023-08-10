@@ -121,7 +121,7 @@ val serve :
   ?tags:Logs.Tag.set ->
   ?restore:Restorer.t ->
   sw:Eio.Switch.t ->
-  net:#Eio.Net.t ->
+  net:_ Eio.Net.t ->
   Vat_config.t ->
   Vat.t
 (** [serve ~restore ~sw ~net vat_config] is a new vat that is listening for new connections
@@ -132,7 +132,7 @@ val client_only_vat :
   ?tags:Logs.Tag.set ->
   ?restore:Restorer.t ->
   sw:Eio.Switch.t ->
-  #Eio.Net.t -> Vat.t
+  _ Eio.Net.t -> Vat.t
 (** [client_only_vat net] is a new vat that does not listen for incoming connections. *)
 
 val manpage_capnp_options : string

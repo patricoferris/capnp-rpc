@@ -731,6 +731,7 @@ let test_late_bootstrap ~net =
 let run name fn = Alcotest.test_case name `Quick fn
 
 let rpc_tests ~net ~dir =
+  let net = Capnp_rpc_unix.Network.v net in
   let run_eio = run_eio ~net in
   [
     run_eio "Simple"              (test_simple ~serve_tls:false);

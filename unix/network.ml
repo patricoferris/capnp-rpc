@@ -1,3 +1,5 @@
+open Eio.Std
+
 module Log = Capnp_rpc.Debug.Log
 module Tls_wrapper = Capnp_rpc_net.Tls_wrapper
 
@@ -48,7 +50,7 @@ module Types = struct
   type join_key_part
 end
 
-type t = Eio.Net.t
+type t = [`Generic] Eio.Net.ty r
 
 let error fmt =
   fmt |> Fmt.kstr @@ fun msg ->
@@ -95,3 +97,5 @@ let connect net ~sw ~secret_key (addr, auth) =
 
 let accept_connection ~secret_key flow =
   Tls_wrapper.connect_as_server flow secret_key
+
+let v t = (t :> [`Generic] Eio.Net.ty r)

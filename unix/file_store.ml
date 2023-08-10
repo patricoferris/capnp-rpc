@@ -5,10 +5,10 @@ module ReaderOps = Capnp.Runtime.ReaderInc.Make(Capnp_rpc_lwt)
 let ( / ) = Eio.Path.( / )
 
 type 'a t = {
-  dir : Eio.Fs.dir Eio.Path.t;
+  dir : Eio.Fs.dir_ty Eio.Path.t;
 }
 
-let create dir = { dir = (dir :> Eio.Fs.dir Eio.Path.t) }
+let create dir = { dir = (dir :> Eio.Fs.dir_ty Eio.Path.t) }
 
 let leaf_of_digest digest =
   Base64.encode_exn ~alphabet:Base64.uri_safe_alphabet ~pad:false digest

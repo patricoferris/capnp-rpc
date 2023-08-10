@@ -23,7 +23,9 @@ let listen_address = `TCP ("127.0.0.1", 7000)
 let start_server ~sw ~clock net =
   let config = Capnp_rpc_unix.Vat_config.create ~secret_key listen_address in
   let service_id = Capnp_rpc_unix.Vat_config.derived_id config "main" in
-  let restore = Capnp_rpc_net.Restorer.single service_id (Echo.local ~clock) in
+  let service = Echo.local ~clock in
+  Switch.on_release sw (fun () -> Capability.dec_ref service);
+  let restore = Capnp_rpc_net.Restorer.single service_id service in
   let vat = Capnp_rpc_unix.serve ~sw ~net ~restore config in
   Capnp_rpc_unix.Vat.sturdy_uri vat service_id
 

@@ -945,8 +945,7 @@ the admin can request the sturdy ref like this:
 <!-- $MDX include,file=examples/sturdy-refs-3/main.ml,part=save -->
 ```ocaml
   (* The admin creates a logger for Alice and saves it: *)
-  let for_alice = Logger.sub root "alice" in
-  let uri = Persistence.save_exn for_alice in
+  let uri = Capability.with_ref (Logger.sub root "alice") Persistence.save_exn in
   Capnp_rpc_unix.Cap_file.save_uri uri "alice.cap" |> or_fail;
   (* Alice uses it: *)
   run_client ~sw ~net "alice.cap";
@@ -1018,7 +1017,7 @@ include Restorer.LOADER
 type loader = [`Logger_beacebd78653e9af] Sturdy_ref.t -> label:string -> Restorer.resolution
 (** A function to create a new in-memory logger with the given label and sturdy-ref. *)
 
-val create : make_sturdy:(Restorer.Id.t -> Uri.t) -> string -> t * loader Eio.Promise.u
+val create : make_sturdy:(Restorer.Id.t -> Uri.t) -> _ Eio.Path.t -> t * loader Eio.Promise.u
 (** [create ~make_sturdy dir] is a database that persists services in [dir] and
     a resolver to let you set the loader (we're not ready to set the loader
     when we create the database). *)
@@ -1095,7 +1094,8 @@ let load t sr digest =
 
 let create ~make_sturdy dir =
   let loader, set_loader = Promise.create () in
-  if not (Sys.file_exists dir) then Unix.mkdir dir 0o755;
+  if not (Sys.file_exists (Eio.Path.native_path_exn dir)) then
+    Eio.Path.mkdir dir ~perm:0o755;
   let store = File_store.create dir in
   {store; loader; make_sturdy}, set_loader
 ```
@@ -1112,9 +1112,10 @@ let serve config =
   Switch.run @@ fun sw ->
   (* Create the on-disk store *)
   let make_sturdy = Capnp_rpc_unix.Vat_config.sturdy_uri config in
-  let db, set_loader = Db.create ~make_sturdy "./store" in
+  let db, set_loader = Db.create ~make_sturdy (env#cwd / "store") in
   (* Create the restorer *)
   let services = Restorer.Table.of_loader ~sw (module Db) db in
+  Switch.on_release sw (fun () -> Restorer.Table.clear services);
   let restore = Restorer.of_table services in
   (* Add the root service *)
   let persist_new ~label =

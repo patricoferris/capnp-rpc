@@ -13,7 +13,7 @@ val recv : t -> (Capnp.Message.ro Capnp.BytesMessage.Message.t, [> `Closed]) res
 (** [recv t] reads the next message from the remote peer.
     It returns [Error `Closed] if the connection to the peer is lost. *)
 
-val of_flow : peer_id:Auth.Digest.t -> #Eio.Flow.two_way -> t
+val of_flow : peer_id:Auth.Digest.t -> _ Eio.Flow.two_way -> t
 (** [of_flow ~peer_id flow] sends and receives on [flow]. *)
 
 val peer_id : t -> Auth.Digest.t
