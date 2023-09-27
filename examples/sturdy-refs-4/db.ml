@@ -42,7 +42,7 @@ let load t sr digest =
 
 let create ~make_sturdy dir =
   let loader, set_loader = Promise.create () in
-  if not (Sys.file_exists (Eio.Path.native_path_exn dir)) then
+  if not (Eio.Path.is_directory dir) then
     Eio.Path.mkdir dir ~perm:0o755;
   let store = File_store.create dir in
   {store; loader; make_sturdy}, set_loader
