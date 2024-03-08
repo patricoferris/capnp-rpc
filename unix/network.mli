@@ -1,5 +1,7 @@
 (** A network using TCP and Unix-domain sockets. *)
 
+open Eio.Std
+
 module Location : sig
   type t = [
     | `Unix of string
@@ -32,7 +34,7 @@ val v : _ Eio.Net.t -> t
 
 val accept_connection :
   secret_key:Capnp_rpc_net.Auth.Secret_key.t option ->
-  _ Eio.Flow.two_way ->
+  [> Eio.Flow.two_way_ty | Eio.Resource.close_ty] r ->
   (Capnp_rpc_net.Endpoint.t, [> `Msg of string]) result
 (** [accept_connection ~switch ~secret_key flow] is a new endpoint for [flow].
     If [secret_key] is not [None], it is used to perform a TLS server-side handshake.

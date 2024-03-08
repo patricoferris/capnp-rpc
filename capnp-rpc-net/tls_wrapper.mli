@@ -1,11 +1,12 @@
 open Auth
+open Eio.Std
 
 val connect_as_server :
-  _ Eio.Flow.two_way -> Auth.Secret_key.t option ->
+  [> Eio.Flow.two_way_ty | Eio.Resource.close_ty] r -> Auth.Secret_key.t option ->
   (Endpoint.t, [> `Msg of string]) result
 
 val connect_as_client :
-  _ Eio.Flow.two_way -> Auth.Secret_key.t Lazy.t -> Digest.t ->
+  [> Eio.Flow.two_way_ty | Eio.Resource.close_ty] r -> Auth.Secret_key.t Lazy.t -> Digest.t ->
   (Endpoint.t, [> `Msg of string]) result
 (** [connect_as_client underlying key digest] is an endpoint using flow [underlying].
     If [digest] requires TLS, it performs a TLS handshake. It uses [key] as its private key
