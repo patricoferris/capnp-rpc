@@ -59,7 +59,7 @@ let error fmt =
 let parse_third_party_cap_id _ = `Two_party_only
 
 let gethostbyname name =
-  Eio_unix.run_in_systhread (fun () -> Unix.gethostbyname name)
+  Eio_unix.run_in_systhread ~label:"gethostbyname" (fun () -> Unix.gethostbyname name)
 
 let addr_of_host host =
   match gethostbyname host with
