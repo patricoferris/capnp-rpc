@@ -71,6 +71,11 @@ let addr_of_host host =
     else
       Eio_unix.Net.Ipaddr.of_unix addr.Unix.h_addr_list.(0)
 
+let try_set_tcp_nodelay ?(value=true) socket =
+  try
+    Unix.setsockopt socket Unix.TCP_NODELAY value
+  with Unix.Unix_error (Unix.EOPNOTSUPP, _, _) -> ()
+
 let connect net ~sw ~secret_key (addr, auth) =
   let eio_addr =
     match addr with
@@ -89,7 +94,7 @@ let connect net ~sw ~secret_key (addr, auth) =
         let socket = Eio_unix.Resource.fd_opt socket |> Option.get in
         Eio_unix.Fd.use_exn "keep-alive" socket @@ fun socket ->
         Unix.setsockopt socket Unix.SO_KEEPALIVE true;
-        Unix.setsockopt socket Unix.TCP_NODELAY true;
+        try_set_tcp_nodelay socket;
         Keepalive.try_set_idle socket 60
     end;
     Tls_wrapper.connect_as_client socket secret_key auth
@@ -100,7 +105,7 @@ let accept_connection ~secret_key flow =
   Eio_unix.Resource.fd_opt flow
   |> Option.iter (fun fd ->
       Eio_unix.Fd.use_exn "TCP_NODELAY" fd @@ fun fd ->
-      Unix.setsockopt fd Unix.TCP_NODELAY true
+      try_set_tcp_nodelay fd
     );
   Tls_wrapper.connect_as_server flow secret_key
 
